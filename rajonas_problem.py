@@ -13,11 +13,9 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from search import *
-from utils import PriorityQueue
 
 root = None
-city_coord = {}
-romania_problem = None
+district_coord = {}
 algo = None
 start = None
 goal = None
@@ -121,24 +119,22 @@ def create_map(root):
             key,
         )
 
-    make_legend(city_map)
-
 
 def make_line(map, x0, y0, x1, y1, distance):
-    """Nupiesia linijas zemelapyje tarp rajonu."""
+    """Nupiesia linijas (briaunas) zemelapyje tarp rajonu."""
     map.create_line(x0, y0, x1, y1)
     map.create_text((x0 + x1) / 2, (y0 + y1) / 2, text=distance)
 
 
-def make_rectangle(map, x0, y0, MARGIN, city_name):
+def make_rectangle(map, x0, y0, MARGIN, district_name):
     """Nupiesia kvadratus, kurie zymi rajonus"""
-    global city_coord
+    global district_coord
     rect = map.create_rectangle(
         x0 - MARGIN, y0 - MARGIN, x0 + MARGIN, y0 + MARGIN, fill="white"
     )
 
-    map.create_text(x0 - 2 * MARGIN, y0 - 2 * MARGIN, text=city_name, anchor=S)
-    city_coord.update({city_name: rect})
+    map.create_text(x0 - 2 * MARGIN, y0 - 2 * MARGIN, text=district_name, anchor=S)
+    district_coord.update({district_name: rect})
 
 
 def make_legend(map):
@@ -160,63 +156,60 @@ def make_legend(map):
 
 
 def display_frontier(queue):
-    """Nuspalvina rajonus i kuriuos galima eiti oranzinia"""
-    global city_map, city_coord
+    """Nuspalvina rajonus (busenas) i kuriuos galima eiti oranzinia"""
+    global city_map, district_coord
 
     queue_temp = deepcopy(queue)
     while queue_temp:
         node = queue_temp.pop()
-        for city, value in city_coord.items():
-            if node.state == city:
-                city_map.itemconfig(city_coord[city], fill="orange")
+        for district, value in district_coord.items():
+            if node.state == district:
+                city_map.itemconfig(district_coord[district], fill="orange")
 
 
-def display_current(node):
-    """Nuspalvina rajono langeli, kuriame esama siuo metu raudonai"""
-    global city_map, city_coord
+def color_rectangle(node, color):
+    """
+    Nuspalvina langelius atitinkama spalva
+    Raudonai - esamas rajonas (busena)
+    Pilkai - jau aplankytas rajonas
+    """
+    global city_map, district_coord
 
-    city = node.state
-    city_map.itemconfig(city_coord[city], fill="red")
-
-
-def display_explored(node):
-    """Nuspalvina aplankytus rajonus pilkai"""
-    global city_map, city_coord
-
-    city = node.state
-    city_map.itemconfig(city_coord[city], fill="gray")
+    district = node.state
+    city_map.itemconfig(district_coord[district], fill=color)
 
 
-def display_final(cities):
+def display_final(path):
     """Nuspalvina sprendimo kelia zaliai"""
-    global city_map, city_coord
+    global city_map, district_coord
 
-    for city in cities:
-        city_map.itemconfig(city_coord[city], fill="green")
+    for district in path:
+        city_map.itemconfig(district_coord[district], fill="green")
 
 
 def breadth_first_tree_search(problem):
     """BFS implementacija"""
     global frontier, counter, node
+
     if counter == -1:
         frontier = deque()
-
-    if counter == -1:
         frontier.append(Node(problem.initial))
-
         display_frontier(frontier)
-    if counter % 3 == 0 and counter >= 0:
-        node = frontier.popleft()
 
-        display_current(node)
-    if counter % 3 == 1 and counter >= 0:
+    elif counter % 3 == 0:
+        node = frontier.popleft()
+        color_rectangle(node, "red")
+
+    elif counter % 3 == 1:
         if problem.goal_test(node.state):
             return node
-        frontier.extend(node.expand(problem))
 
+        frontier.extend(node.expand(problem))
         display_frontier(frontier)
-    if counter % 3 == 2 and counter >= 0:
-        display_explored(node)
+
+    elif counter % 3 == 2:
+        color_rectangle(node, "grey")
+
     return None
 
 
@@ -224,25 +217,25 @@ def depth_first_tree_search(problem):
     """DFS implementacija"""
     # This search algorithm might not work in case of repeated paths.
     global frontier, counter, node
-    if counter == -1:
-        frontier = []  # stack
 
     if counter == -1:
+        frontier = []
         frontier.append(Node(problem.initial))
-
         display_frontier(frontier)
+
     if counter % 3 == 0 and counter >= 0:
         node = frontier.pop()
+        color_rectangle(node, "red")
 
-        display_current(node)
     if counter % 3 == 1 and counter >= 0:
         if problem.goal_test(node.state):
             return node
         frontier.extend(node.expand(problem))
-
         display_frontier(frontier)
+
     if counter % 3 == 2 and counter >= 0:
-        display_explored(node)
+        color_rectangle(node, "grey")
+
     return None
 
 
@@ -254,45 +247,44 @@ def on_click():
 
     vilnius_problem = GraphProblem(start.get(), goal.get(), vilnius_map)
 
-    if "Breadth-First Tree Search" == algo.get():
+    final_path_found = False
+
+    if algo.get() == "Breadth-First Tree Search":
         node = breadth_first_tree_search(vilnius_problem)
         if node is not None:
             final_path = breadth_first_tree_search(vilnius_problem).solution()
-            final_path.append(start.get())
-            display_final(final_path)
-            next_button.config(state="disabled")
-        counter += 1
+            final_path_found = True
 
-    elif "Depth-First Tree Search" == algo.get():
+    elif algo.get() == "Depth-First Tree Search":
         node = depth_first_tree_search(vilnius_problem)
         if node is not None:
             final_path = depth_first_tree_search(vilnius_problem).solution()
-            final_path.append(start.get())
-            display_final(final_path)
-            next_button.config(state="disabled")
-        counter += 1
+            final_path_found = True
+
+    if final_path_found:
+        final_path.append(start.get())
+        display_final(final_path)
+        next_button.config(state="disabled")
+    counter += 1
 
 
 def reset_map():
     """Isvalo zemelapi"""
-    global counter, city_coord, city_map, next_button
+    global counter, district_coord, city_map, next_button
     counter = -1
 
-    for key, value in city_coord.items():
-        city_map.itemconfig(city_coord[key], fill="white")
+    for key, value in district_coord.items():
+        city_map.itemconfig(district_coord[key], fill="white")
     next_button.config(state="normal")
 
 
 if __name__ == "__main__":
     root = Tk()
-
     root.title("Vilniaus rajonu zemelapis")
-
     root.geometry("950x1150")
 
     algo = StringVar(root)
     start = StringVar(root)
-
     goal = StringVar(root)
 
     algo.set("Breadth-First Tree Search")
@@ -306,13 +298,12 @@ if __name__ == "__main__":
 
     Label(root, text="\n Search Algorithm").pack()
     algorithm_menu.pack()
-    Label(root, text="\n Start Rajonas").pack()
 
+    Label(root, text="\n Start Rajonas").pack()
     start_menu = OptionMenu(root, start, *cities)
     start_menu.pack()
 
     Label(root, text="\n Goal Rajonas").pack()
-
     goal_menu = OptionMenu(root, goal, *cities)
     goal_menu.pack()
 
@@ -346,5 +337,6 @@ if __name__ == "__main__":
     frame1.pack(side=BOTTOM)
 
     create_map(root)
+    make_legend(city_map)
 
     root.mainloop()
