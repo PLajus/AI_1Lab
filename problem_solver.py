@@ -1,3 +1,10 @@
+"""
+2022-02-17
+Povilas Lajus
+Ernest Petrovic
+Mindaugas Gaidys
+"""
+
 import copy
 import sys
 import os

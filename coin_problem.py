@@ -1,3 +1,10 @@
+"""
+2022-02-17
+Povilas Lajus
+Ernest Petrovic
+Mindaugas Gaidys
+"""
+
 import sys
 import os
 
@@ -80,4 +87,6 @@ class CoinProblem(Problem):
         return state[0]
 
     def path_cost(self, c, state1, action, state2):
+        """Apskaiciuoja kelio kaina"""
+
         return c + state1[0]
