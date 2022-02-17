@@ -1,3 +1,10 @@
+"""
+2022-02-17
+Povilas Lajus
+Ernest Petrovic
+Mindaugas Gaidys
+"""
+
 import copy
 import sys
 import os
@@ -9,22 +16,22 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from search import breadth_first_graph_search
 
 if __name__ == "__main__":
-    state = maze.Maze(5)
-    state.build_maze()
-    state.add_walls(4)
-    coin_location = state.add_coin()
+    state = [0, 0, 0]
+        #   val,x, y
 
-    goal = copy.deepcopy(state)
-    goal.map[coin_location[0]][coin_location[1]] = 0
-    goal.map[0][0] = -8
+    map = maze.Maze(5)
+    map.build_maze()
+    map.add_walls(3)
+    coin_location = map.add_coin()
 
-    print("Start state:")
-    state.print_maze()
-    print("\nGoal state:")
-    goal.print_maze()
+    goal = [-1, coin_location[0], coin_location[1]]
 
-    # problem = coin_problem.CoinProblem(state, goal)
-    # while not problem.goal_test(state):
-    #     breadth_first_graph_search(problem)
-    #     state.print_maze()
-    #     print("\n")
+    print("Start:")
+    map.print_maze(state[1], state[2])
+    print()
+
+    problem = coin_problem.CoinProblem(tuple(state), tuple(goal), map)
+
+    solution = breadth_first_graph_search(problem).solution()
+    print(solution)
+    print(breadth_first_graph_search(problem).path()[-1].path_cost)
