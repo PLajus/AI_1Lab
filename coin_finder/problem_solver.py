@@ -5,7 +5,6 @@ Ernest Petrovic
 Mindaugas Gaidys
 """
 
-import copy
 import sys
 import os
 
@@ -17,6 +16,7 @@ from search import breadth_first_graph_search
 
 if __name__ == "__main__":
     state = [0, 0, 0]
+    
         #   val,x, y
 
     map = maze.Maze(5)

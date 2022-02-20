@@ -8,6 +8,8 @@ Mindaugas Gaidys
 import sys
 import os
 
+from items import Item
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from search import Problem
 
@@ -46,16 +48,16 @@ class CoinProblem(Problem):
         # Tikrina ar neeis i siena
         for action in possible_actions:
             if action == 'UP':
-                if self.maze.map[state[1] - 1][state[2]] == -3: # -3 = siena
+                if self.maze.map[state[1] - 1][state[2]] == Item.WALL:
                     possible_actions.remove("UP")
             if action == 'DOWN':
-                if self.maze.map[state[1] + 1][state[2]] == -3:
+                if self.maze.map[state[1] + 1][state[2]] == Item.WALL:
                     possible_actions.remove("DOWN")
             if action == 'RIGHT':
-                if self.maze.map[state[1]][state[2] + 1] == -3:
+                if self.maze.map[state[1]][state[2] + 1] == Item.WALL:
                     possible_actions.remove("RIGHT")
             if action == 'LEFT':
-                if self.maze.map[state[1]][state[2] - 1] == -3:
+                if self.maze.map[state[1]][state[2] - 1] == Item.WALL:
                     possible_actions.remove("LEFT")
 
         if not possible_actions:
